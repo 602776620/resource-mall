@@ -12,7 +12,7 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
     __table_args__ = (Index("ix_refresh_tokens_user_id", "user_id"),)
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )

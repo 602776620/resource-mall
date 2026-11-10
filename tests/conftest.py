@@ -42,7 +42,12 @@ def db():
     session = SessionLocal()
     try:
         with session.begin():
-            session.execute(text("TRUNCATE refresh_tokens, users RESTART IDENTITY CASCADE"))
+            session.execute(
+                text(
+                    "TRUNCATE audit_logs, orders, products, refresh_tokens, users "
+                    "RESTART IDENTITY CASCADE"
+                )
+            )
         yield session
         session.commit()
     except Exception:

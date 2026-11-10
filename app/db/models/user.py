@@ -1,7 +1,7 @@
 """users 表（03 §1）。密码 argon2id 哈希；email 小写化存库。"""
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, String, text
+from sqlalchemy import BigInteger, Boolean, DateTime, Index, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -10,13 +10,18 @@ from app.db.base import Base
 
 class User(Base):
     __tablename__ = "users"
+    # 03：唯一约束即索引（命名索引 uq_users_*，与迁移 f48c716731a7 对齐）。
+    __table_args__ = (
+        Index("uq_users_username", "username", unique=True),
+        Index("uq_users_email", "email", unique=True),
+    )
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     # 04 §3 / 09 T03：username/email 二选一 → username 可空；正则 ^[a-zA-Z0-9_]{3,32}$（API 层校验）。
-    # 唯一约束下 PG 允许多个 NULL 并存（email-only 用户不受影响）。
-    username: Mapped[str | None] = mapped_column(String(32), unique=True, nullable=True)
+    # 唯一索引下 PG 允许多个 NULL 并存（email-only 用户不受影响）。
+    username: Mapped[str | None] = mapped_column(String(32), nullable=True)
     # email 可空、唯一；存小写（citext 留 10 号，MVP 应用层小写化）
-    email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=text("false"))
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("true"))
