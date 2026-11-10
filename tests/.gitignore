@@ -1,0 +1,3 @@
+# 测试用密钥（conftest 启动时自动生成，勿入库）
+.jwt_test_secret
+.hmac_test_secret

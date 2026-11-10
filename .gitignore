@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 前端
+node_modules/
+web/dist/
+
+# 配置（密钥不入库，06 号）
+.env
+.env.*
+!.env.example
+
+# 运行期文件目录（07 §7，目录本体保留占位、内容忽略）
+downloads/*
+!downloads/.gitkeep
+uploads/*
+!uploads/.gitkeep
+backups/
+
+# IDE / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

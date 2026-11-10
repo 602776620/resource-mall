@@ -1,0 +1,38 @@
+# T01：PG16 + Redis7，仅回环端口（06 号），数据卷持久化（08 §3）
+services:
+  db:
+    image: postgres:16
+    container_name: mall_db
+    environment:
+      POSTGRES_DB: mall
+      POSTGRES_USER: mall
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - mall_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mall -d mall"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: mall_redis
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}   # 仅 healthcheck 用
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    ports:
+      - "127.0.0.1:16379:6379"   # 宿主机 6379 被本地 redis-server 占用（08 §8.1，2026-11-09 实测）
+    volumes:
+      - mall_redisdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $${REDIS_PASSWORD} ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mall_pgdata:
+  mall_redisdata:
