@@ -12,11 +12,11 @@ export interface ApiErrorBody {
   };
 }
 
-/** 用户（04 §3 /users/me 及 register/login 返回的 user） */
+/** 用户（04 §3 /users/me 及 register/login 返回的 user）。username/email 二选一，均可空。 */
 export interface User {
   id: number;
-  username: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   is_admin: boolean;
   created_at?: string;
 }

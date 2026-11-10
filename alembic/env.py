@@ -7,6 +7,9 @@ from sqlalchemy import engine_from_config, pool
 from app.core.config import settings
 from app.db.base import Base
 
+# 导入全部模型，注册到 Base.metadata，供 autogen 检测差异（03 每表一文件）。
+from app.db import models  # noqa: E402,F401
+
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

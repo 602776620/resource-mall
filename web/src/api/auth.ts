@@ -46,5 +46,5 @@ export async function changePassword(p: {
   old_password: string;
   new_password: string;
 }): Promise<void> {
-  await http.post("/users/change-password", p);
+  await http.put("/users/me/password", p);
 }
