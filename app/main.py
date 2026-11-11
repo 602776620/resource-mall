@@ -1,5 +1,9 @@
-"""FastAPI 入口：create_app + 全局 handler + 健康检查（08 §7）。"""
+"""FastAPI 入口：create_app + 全局 handler + 健康检查（08 §7）+ 后台任务（05 §7）。"""
+import asyncio
+import contextlib
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,8 +20,44 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger("app")
 
 
+async def _order_expiry_loop() -> None:
+    """订单超时取消任务（05 §7）：每 60s 扫描 pending 且过期 → cancelled（含券回滚）。幂等、单实例。
+
+    DB 操作为同步，放到线程池避免阻塞事件循环；异常吞掉记日志（任务不能崩）。
+    """
+    from app.services import order_service
+
+    while True:
+        await asyncio.sleep(60)  # 05 §7：固定 60s 周期
+
+        def _run() -> None:
+            db = SessionLocal()
+            try:
+                n = order_service.expire_pending_orders(db)
+                if n:
+                    logger.info("order-expiry: cancelled %d expired order(s)", n)
+            except Exception as e:  # noqa: BLE001 - 后台任务需自吞
+                logger.error("order-expiry task failed: %s", e)
+            finally:
+                db.close()
+
+        await asyncio.to_thread(_run)
+
+
+@asynccontextmanager
+async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
+    task = asyncio.create_task(_order_expiry_loop())
+    logger.info("background task started: order-expiry (60s)")
+    try:
+        yield
+    finally:
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="resource-mall", version="0.1.0")
+    app = FastAPI(title="resource-mall", version="0.1.0", lifespan=_lifespan)
 
     app.add_middleware(
         CORSMiddleware,

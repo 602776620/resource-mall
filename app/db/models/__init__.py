@@ -3,6 +3,18 @@ from app.db.models.user import User
 from app.db.models.refresh_token import RefreshToken
 from app.db.models.product import Product
 from app.db.models.order import Order
+from app.db.models.coupon import Coupon
+from app.db.models.coupon_usage import CouponUsage
+from app.db.models.download_log import DownloadLog
 from app.db.models.audit_log import AuditLog
 
-__all__ = ["User", "RefreshToken", "Product", "Order", "AuditLog"]
+__all__ = [
+    "User",
+    "RefreshToken",
+    "Product",
+    "Order",
+    "Coupon",
+    "CouponUsage",
+    "DownloadLog",
+    "AuditLog",
+]

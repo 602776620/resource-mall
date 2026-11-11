@@ -1,0 +1,538 @@
+/* 订单域样式（T06）：下单确认 / 待支付 / 我的订单。共用 .card / .modal / .amount / .countdown。 */
+
+/* ---- 通用：卡片 / 标题 / 金额 / 倒计时 / 输入提示 ---- */
+.page-title {
+  font-size: 22px;
+  margin: 20px 0 16px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.card-title {
+  margin: 0 0 14px;
+  font-size: 16px;
+}
+.mono {
+  font-family: "SF Mono", "Consolas", "Menlo", monospace;
+  letter-spacing: 0.3px;
+}
+.amount {
+  color: var(--fg);
+  font-weight: 600;
+}
+.amount-discount {
+  color: #16a34a;
+}
+.amount-original {
+  text-decoration: line-through;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+.payable-amount {
+  color: #dc2626;
+  font-size: 20px;
+}
+.countdown {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.countdown-ended {
+  color: #dc2626;
+}
+.form-hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+.detail-loading {
+  min-height: 200px;
+}
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 13px;
+}
+.btn-block {
+  display: block;
+  width: 100%;
+}
+.btn-danger {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+.btn-danger:hover {
+  background: #fef2f2;
+}
+
+/* ---- 下单确认页 ---- */
+.order-create {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+.order-create-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.order-summary-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.order-summary-cover {
+  width: 72px;
+  height: 45px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #f1f1f1;
+}
+.order-summary-cover-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.order-summary-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.order-summary-meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+.check-hint {
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+.check-ok {
+  color: #16a34a;
+}
+.check-bad {
+  color: #dc2626;
+}
+.order-payable {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.payable-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 14px;
+}
+.payable-total {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.order-create-hint {
+  font-size: 12px;
+  margin-top: 12px;
+}
+.order-form .btn-block {
+  margin-top: 16px;
+}
+
+/* ---- 待支付页 ---- */
+.payment-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+.payment-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.payment-qr {
+  text-align: center;
+}
+.payment-channel-tabs {
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.channel-tab {
+  padding: 6px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  font-size: 14px;
+  cursor: pointer;
+}
+.channel-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.qr-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.qr-mock {
+  width: 180px;
+  height: 180px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background:
+    linear-gradient(45deg, #f1f1f1 25%, transparent 25%, transparent 75%, #f1f1f1 75%) 0 0 / 20px 20px,
+    linear-gradient(45deg, #f1f1f1 25%, transparent 25%, transparent 75%, #f1f1f1 75%) 10px 10px / 20px 20px,
+    var(--card);
+}
+.qr-hint {
+  font-size: 13px;
+}
+.payment-tip {
+  font-size: 14px;
+  margin: 18px 0 0;
+}
+.payment-tip .amount {
+  margin: 0 4px;
+}
+.payment-zero {
+  color: #16a34a;
+  font-size: 13px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 14px;
+}
+.payment-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 14px;
+}
+.payment-row:last-of-type {
+  border-bottom: none;
+}
+.order-no {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.copy-btn {
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 6px;
+  padding: 1px 8px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.copy-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.paid-submitted {
+  color: #16a34a;
+  font-size: 13px;
+}
+.payment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.payment-poll-hint {
+  font-size: 12px;
+  margin-top: 14px;
+}
+
+/* 支付完成态 */
+.payment-done {
+  text-align: center;
+}
+.payment-done-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.payment-done-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* ---- 弹层（我已付款 / 通用）---- */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+.modal-title {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+.modal-desc {
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+.modal textarea {
+  width: 100%;
+  resize: vertical;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* ---- 我的订单页 ---- */
+.orders-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+.orders-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.tab {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  font-size: 13px;
+  cursor: pointer;
+}
+.tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.orders-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.order-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.order-card-skeleton {
+  background: linear-gradient(90deg, #f5f5f5 25%, #ececec 50%, #f5f5f5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border: none;
+  min-height: 90px;
+}
+.order-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.order-product {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.order-title {
+  font-weight: 600;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.order-no {
+  font-size: 12px;
+}
+.order-status {
+  flex-shrink: 0;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.order-status-pending {
+  background: #fef9c3;
+  color: #a16207;
+}
+.order-status-paid {
+  background: #dcfce7;
+  color: #15803d;
+}
+.order-status-cancelled {
+  background: #f1f5f9;
+  color: var(--muted);
+}
+.order-status-revoked {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.order-card-mid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.order-meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.order-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+}
+.order-waiting {
+  font-size: 13px;
+}
+
+/* ---- 核销工作台（05 §2 SOP）---- */
+.reconcile-page h1 {
+  font-size: 22px;
+  margin: 8px 0 16px;
+}
+.sop-hints {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: #92400e;
+}
+.sop-hints h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+.sop-hints ol {
+  margin: 0;
+  padding-left: 18px;
+}
+.sop-hints li {
+  margin: 2px 0;
+}
+.reconcile-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.channel-select {
+  width: 110px;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 14px;
+}
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.admin-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--muted);
+}
+.admin-table tbody tr:hover {
+  background: #fafafa;
+}
+.highlight-cell {
+  background: #fefce8;
+  font-weight: 600;
+}
+.note-cell {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 响应式 ---- */
+@media (max-width: 820px) {
+  .order-create-grid,
+  .payment-grid {
+    grid-template-columns: 1fr;
+  }
+  .payment-page,
+  .orders-page,
+  .order-create {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

@@ -44,7 +44,8 @@ def db():
         with session.begin():
             session.execute(
                 text(
-                    "TRUNCATE audit_logs, orders, products, refresh_tokens, users "
+                    "TRUNCATE audit_logs, coupon_usages, download_logs, coupons, "
+                    "orders, products, refresh_tokens, users "
                     "RESTART IDENTITY CASCADE"
                 )
             )

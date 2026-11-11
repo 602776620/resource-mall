@@ -11,6 +11,7 @@ export interface QueryPatch {
   sort?: string;
   price_min?: string;
   price_max?: string;
+  tab?: string;
   page?: string;
 }
 
