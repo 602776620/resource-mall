@@ -167,7 +167,23 @@ def list_user_orders(
             .limit(page_size)
         ).scalars()
     )
-    return [_order_out(o) for o in items], total
+    # T07：批量取配额窗口（7 天）内 download_logs 计数，供下载中心展示剩余次数（05 §4）
+    since = _utcnow() - timedelta(days=settings.download_window_days)
+    counts: dict[int, int] = {}
+    if items:
+        rows = db.execute(
+            select(DownloadLog.order_id, func.count())
+            .where(
+                DownloadLog.order_id.in_([o.id for o in items]),
+                DownloadLog.created_at >= since,
+            )
+            .group_by(DownloadLog.order_id)
+        ).all()
+        counts = dict(rows)
+    return [
+        _order_out(o).model_copy(update={"download_count": counts.get(o.id, 0)})
+        for o in items
+    ], total
 
 
 def cancel_order(db: Session, *, user_id: int, order_no: str) -> Order:

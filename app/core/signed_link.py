@@ -41,7 +41,12 @@ def sign_media(product_id: int, relpath: str) -> str:
 
 
 def sign_file(order_id: int) -> str:
-    return f"/files/{_make(f'file|{order_id}', FILE_TTL)}"
+    """签发文件短链 token（subject = 'file|{order_id}'，15min）。
+
+    只返回 token；拼成可访问 URL 是路由层的职责（`request.url_for("files_download")`），
+    避免此处硬编码 /api/v1 前缀。
+    """
+    return _make(f"file|{order_id}", FILE_TTL)
 
 
 def verify(token: str) -> tuple[str, int]:

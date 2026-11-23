@@ -1,7 +1,7 @@
 """API v1 聚合路由（07 §6：统一 /api/v1）。"""
 from fastapi import APIRouter
 
-from app.api.v1 import auth, coupons, orders, products, users
+from app.api.v1 import auth, coupons, files, orders, products, users
 
 api_router = APIRouter()
 
@@ -14,3 +14,5 @@ api_router.include_router(products.admin_router, prefix="/admin", tags=["admin"]
 api_router.include_router(orders.router, prefix="/orders", tags=["orders"])
 api_router.include_router(orders.admin_router, prefix="/admin/orders", tags=["admin-orders"])
 api_router.include_router(coupons.router, tags=["coupons"])
+# T07：资源文件签名短链 /files/{token}（无鉴权，验签+消费前复核 paid；04 §5 / 06 红线）
+api_router.include_router(files.router)

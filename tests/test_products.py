@@ -82,8 +82,11 @@ def _mk_product(
 
 
 def _abs(relpath: str) -> str:
-    base = storage.root("downloads") if relpath.startswith("downloads") else storage.root("uploads")
-    return str(base / relpath)
+    """存库相对路径（含顶层目录）→ 磁盘绝对路径。与 storage.resolve_* 同布局：
+    文件实际位于 root(kind)/<inner>（顶层目录即 root，不再叠加前缀）。"""
+    kind = "downloads" if relpath.startswith("downloads") else "uploads"
+    inner = relpath.split("/", 1)[1]
+    return str(storage.root(kind) / inner)
 
 
 def _write_media(relpath: str, content: bytes = b"IMGDATA") -> str:

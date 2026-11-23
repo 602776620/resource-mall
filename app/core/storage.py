@@ -85,44 +85,63 @@ def resolve_abs(relpath: str) -> Path:
     """存库相对路径（含顶层目录）→ 绝对路径（用于写入）。仅允许 uploads/、downloads/ 前缀。"""
     if not relpath or relpath.startswith("/"):
         raise BizError("非法文件路径", status=400, code="BAD_REQUEST")
-    norm = os.path.normpath(relpath)
-    if ".." in norm.split(os.sep):
+    norm = os.path.normpath(relpath).replace(os.sep, "/")  # 统一前斜杠（与 resolve_* 一致，规避 Windows 反斜杠）
+    if ".." in norm.split("/"):
         raise BizError("非法文件路径", status=400, code="BAD_REQUEST")
     if not (norm.startswith("uploads") or norm.startswith("downloads")):
         raise BizError("非法文件路径", status=400, code="BAD_REQUEST")
     kind = "downloads" if norm.startswith("downloads") else "uploads"
-    inner = norm[len(kind) + 1:]
+    inner = _inner_of(norm, kind)  # 剥离顶层目录 → 单一前缀（见 _inner_of）
     return _validate_inside(inner, root(kind))
 
 
 def resolve_for_read(relpath: str, allowed_prefixes: tuple[str, ...]) -> Path:
-    """相对路径 → 绝对路径；前缀白名单 + 穿越校验；不存在 → 404。"""
+    """相对路径（含顶层目录，如 downloads/x.zip）→ 绝对路径；前缀白名单 + 穿越校验；不存在 → 404。"""
     if not relpath or relpath.startswith("/"):
         raise BizError("资源不存在", status=404, code="NOT_FOUND")
-    norm = os.path.normpath(relpath)
-    if ".." in norm.split(os.sep):
+    norm = os.path.normpath(relpath).replace(os.sep, "/")
+    if ".." in norm.split("/"):
         raise BizError("非法文件路径", status=400, code="BAD_REQUEST")
-    if not any(norm == p or norm.startswith(p + os.sep) for p in allowed_prefixes):
+    if not any(norm == p or norm.startswith(p + "/") for p in allowed_prefixes):
         raise BizError("资源不存在", status=404, code="NOT_FOUND")
     kind = "downloads" if norm.startswith("downloads") else "uploads"
-    full = _validate_inside(norm, root(kind))
+    inner = _inner_of(norm, kind)
+    full = _validate_inside(inner, root(kind))
     if not full.is_file():
         raise BizError("资源不存在", status=404, code="NOT_FOUND")
     return full
+
+
+def _inner_of(norm: str, kind: str) -> str:
+    """normpath 后的路径（含顶层目录，统一前斜杠）→ 顶层目录内相对路径。
+
+    root(kind) 本身即该顶层目录（uploads/ 或 downloads/），文件实际位于
+    root(kind)/<inner>；存库相对路径为 kind/<inner>。统一转前斜杠，
+    规避 Windows 下 normpath 产生反斜杠导致 startswith 失配。
+    裸顶层目录（无子路径）非法。
+    """
+    parts = norm.split("/", 1)
+    if len(parts) < 2 or not parts[1]:
+        raise BizError("非法文件路径", status=400, code="BAD_REQUEST")
+    return parts[1]
 
 
 def delete_rel(relpath: str | None) -> None:
     """物理删除（不存在则忽略）。仅允许 uploads/、downloads/ 前缀（06 红线不外溢）。"""
     if not relpath or relpath.startswith("/"):
         return
-    norm = os.path.normpath(relpath)
-    if ".." in norm.split(os.sep):
+    norm = os.path.normpath(relpath).replace(os.sep, "/")  # 统一前斜杠（与 resolve_* 一致）
+    if ".." in norm.split("/"):
         return
     if not (norm.startswith("uploads") or norm.startswith("downloads")):
         return
     kind = "downloads" if norm.startswith("downloads") else "uploads"
+    parts = norm.split("/", 1)
+    if len(parts) < 2 or not parts[1]:
+        return
+    inner = parts[1]
     try:
-        full = _validate_inside(norm, root(kind))
+        full = _validate_inside(inner, root(kind))
         if full.is_file():
             full.unlink()
     except (BizError, OSError):

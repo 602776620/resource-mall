@@ -523,6 +523,26 @@
   white-space: nowrap;
 }
 
+/* ---- 下载中心（T07）---- */
+.downloads-page {
+  padding: 4px 0;
+}
+.downloads-hint {
+  margin: -8px 0 16px;
+  font-size: 13px;
+}
+.download-card {
+  max-width: 720px;
+}
+.download-quota {
+  color: #15803d;
+  font-weight: 600;
+}
+.download-quota-empty {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
 /* ---- 响应式 ---- */
 @media (max-width: 820px) {
   .order-create-grid,

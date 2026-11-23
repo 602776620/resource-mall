@@ -170,7 +170,8 @@ def test_detail_preview_signed_urls_valid(client):
     from pathlib import Path
 
     rel = "uploads/preview/catalog_sample.png"
-    full = Path(storage.root("uploads")) / rel
+    # 与 storage.resolve_* 同布局：顶层目录即 root，不再叠加前缀
+    full = Path(storage.root("uploads")) / rel.split("/", 1)[1]
     full.parent.mkdir(parents=True, exist_ok=True)
     full.write_bytes(b"PNGSAMPLE")
     try:

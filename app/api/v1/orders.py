@@ -1,9 +1,11 @@
 """订单路由（04 §5 用户 / §6 管理员核销工作台）。"""
 from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user, get_db, require_admin
 from app.db.models import Product, User
+from app.services import download_service
 from app.schemas.order import (
     AdminOrderConfirmIn,
     AdminOrderDetailOut,
@@ -73,6 +75,31 @@ def paid_submitted(
     return order_service._order_out(
         order_service.submit_paid(db, user_id=current.id, order_no=order_no, note=data.note)
     )
+
+
+# ---- 下载签发（04 §5 / 05 §4 / T07）----
+# 校验链顺序：本人+存在→404；paid→403 ORDER_NOT_PAID；Redis 7 天 50 次→429
+# （降级 DB 兜底、双挂 503）；消费前复核 paid；写 download_logs；302 → /files/{token}
+
+
+@router.get("/{order_no}/download", response_model=None, include_in_schema=True)
+def download(
+    order_no: str,
+    request: Request,
+    current: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> RedirectResponse:
+    token = download_service.issue(
+        db,
+        user_id=current.id,
+        order_no=order_no,
+        ip=_client_ip(request),
+        user_agent=request.headers.get("user-agent"),
+    )
+    # 302 到文件短链端点：用相对 Location（/api/v1/files/{token}），
+    # 浏览器按当前 origin 解析 → 经 Vite proxy 直达后端，不泄漏内部 Host（04 §5）。
+    location = request.url_for("files_download", token=token).path
+    return RedirectResponse(url=location, status_code=302)
 
 
 # ---- 管理员侧（04 §6，需管理员；06 §1 红线 1）----

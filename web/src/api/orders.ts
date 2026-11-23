@@ -23,6 +23,8 @@ export interface Order {
   paid_at: string | null;
   expire_at: string;
   created_at: string;
+  /** 配额窗口（7 天）内已签发下载次数（05 §4，下载中心展示剩余次数）。 */
+  download_count: number;
 }
 
 /** 订单详情（多文件/撤销字段）。 */
@@ -97,6 +99,42 @@ export function cancelOrder(orderNo: string): Promise<Order> {
 /** 我已付款（提交支付说明，进入核销队列）。note ≥5 字。 */
 export function submitPaid(orderNo: string, note: string): Promise<Order> {
   return http.post<Order>(`/orders/${orderNo}/paid-submitted`, { note }).then((r) => r.data);
+}
+
+/**
+ * 触发下载（04 §5 / T07）：GET /orders/{no}/download → 302 → /files/{token}。
+ *
+ * 为什么不用 window.location 直接导航？该签发接口需要 Bearer 头（仅本人），
+ * 顶层导航无法带 Authorization → 会 401。故分两步：
+ *   1. fetch（走 axios 同款 Authorization 头，follow 302）拿到签名短链 URL，并读取 HTTP 状态；
+ *      拿到后立即 cancel 响应体（不读文件内容，避免大文件进内存）。
+ *   2. 用拿到的 /files/{token} 做顶层导航：无鉴权、流式直写磁盘（浏览器原生，支持断点续传），
+ *      Content-Disposition: attachment 触发下载而非跳转，页面不会被替换。
+ * 返回 403（未支付/已撤销）/429（超限）/503 时抛错，由调用方提示（不打开新页显示裸 JSON）。
+ */
+export async function triggerDownload(orderNo: string): Promise<void> {
+  const { getToken } = await import("@/stores/auth");
+  const t = getToken();
+  const res = await fetch(
+    `/api/v1/orders/${encodeURIComponent(orderNo)}/download`,
+    { headers: t ? { Authorization: `Bearer ${t.access_token}` } : {} },
+  );
+  // 读 JSON 错误体（非 2xx/302 时后端返回 {error:{...}}）
+  if (!res.ok) {
+    let msg = `下载失败（${res.status}）`;
+    try {
+      const body = (await res.json()) as { error?: { message?: string } };
+      if (body?.error?.message) msg = body.error.message;
+    } catch {
+      /* 非 JSON 错误体，保留默认文案 */
+    }
+    throw new Error(msg);
+  }
+  // res.url 为 302 跟随后的最终签名短链（/api/v1/files/{token}，浏览器侧 origin=前端）。
+  // 立即取消该流：不读文件内容（大文件不进内存），真正的下载由下方顶层导航完成
+  // （签名短链重复访问不计配额，05 §4）。
+  void res.body?.cancel();
+  window.location.assign(res.url);
 }
 
 // ---- 管理端（04 §6，核销工作台）----

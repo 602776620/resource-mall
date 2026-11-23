@@ -29,6 +29,8 @@ class OrderOut(BaseModel):
     paid_at: str | None = None
     expire_at: str
     created_at: str
+    # T07：配额窗口内已签发下载次数（05 §4，供下载中心展示「剩余下载次数」）
+    download_count: int = 0
 
 
 class OrderDetailOut(OrderOut):
